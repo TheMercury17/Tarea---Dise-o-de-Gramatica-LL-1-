@@ -1,0 +1,8 @@
+# Proyecto: Tarea - Diseño e Implementación de Gramática LL(1)
+# Grupo 5: Andrés Sebastián Coral Vallejo & Carol Arenas Cardona
+# Universidad Sergio Arboleda
+# Lenguajes de Programación y Transducción - Docente: Joaquin F. Sanchez
+
+# No requiere librerías externas obligatorias (usa biblioteca estándar de Python: typing, re, math, sys, unittest)
+# Opcional para pruebas avanzadas:
+pytest>=7.0.0
