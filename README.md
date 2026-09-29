@@ -44,7 +44,7 @@ El lenguaje desarrollado satisface integralmente los requerimientos solicitados:
 4. **Asignación y Reutilización de Variables:** Sentencias de asignación imperativa (`id = Expr;`) y soporte de expresiones independientes (`Expr;`).
 5. **Garantía y Aislamiento de Fases:**
    - **Léxica:** Tokenizador formal basado en expresiones regulares y gestión de errores posicionales.
-   - **Sintáctica:** Algoritmo iterativo de punto fijo para PRIMEROS/SIGUIENTES/PREDICCIÓN, tabla de análisis sintáctico $M[A, a]$ y reconocimiento no recursivo con pila explícita y generación de AST.
+   - **Sintáctica:** Algoritmo iterativo de punto fijo para PRIMEROS/SIGUIENTES/PREDICCIÓN, tabla de análisis sintáctico `M[A, a]` y reconocimiento no recursivo con pila explícita y generación de AST.
    - **Semántica:** Tabla de símbolos (entorno de variables), detección de variables indefinidas, control de divisiones por cero, módulo por cero y asíntotas trigonométricas.
 
 ---
@@ -54,24 +54,29 @@ El lenguaje desarrollado satisface integralmente los requerimientos solicitados:
 ### Transformaciones para Cumplir la Condición LL(1)
 
 Una gramática estándar para expresiones aritméticas y asignaciones presenta comúnmente dos obstáculos que impiden el análisis LL(1):
-1. **Recursión por la Izquierda:** Genera bucles infinitos en algoritmos descendentes. Por ejemplo, $E \to E + T$ se transforma eliminando la recursión hacia la derecha mediante la introducción del no terminal $E'$:
-   $$E \to T E' \quad ; \quad E' \to + T E' \mid - T E' \mid \varepsilon$$
-2. **Conflicto en Sentencias (Factorización a la Izquierda):** Tanto una sentencia de asignación (`x = 10;`) como una sentencia de expresión (`x + 5;`) inician con el mismo terminal `id`. Si se formulara $Stmt \to id = Expr ; \mid Expr ;$, ambas opciones tendrían a `id` en sus conjuntos directores, generando ambigüedad LL(1).  
-   **Solución Matemática:** Se factoriza el no terminal $Stmt$:
-   $$Stmt \to id \; StmtTail \mid NonIdFactor \; Term' \; Expr' ;$$
-   $$StmtTail \to = Expr ; \mid Term' \; Expr' ;$$
+
+1. **Recursión por la Izquierda:** Genera bucles infinitos en algoritmos descendentes. Por ejemplo, `E -> E + T` se transforma eliminando la recursión hacia la derecha mediante la introducción del no terminal `E'`:
+   - `E -> T E'`
+   - `E' -> + T E' | - T E' | ε`
+
+2. **Conflicto en Sentencias (Factorización a la Izquierda):** Tanto una sentencia de asignación (`x = 10;`) como una sentencia de expresión (`x + 5;`) inician con el mismo terminal `id`. Si se formulara `Stmt -> id = Expr ; | Expr ;`, ambas opciones tendrían a `id` en sus conjuntos directores, generando ambigüedad LL(1).  
+   **Solución Matemática:** Se factoriza el no terminal `Stmt`:
+   - `Stmt -> id StmtTail | NonIdFactor TermPrime ExprPrime ;`
+   - `StmtTail -> = Expr ; | TermPrime ExprPrime ;`
+
    Al analizar los conjuntos directores:
-   $$\text{PRED}(StmtTail \to = Expr ;) = \{ = \}$$
-   $$\text{PRED}(StmtTail \to Term' Expr' ;) = \{ \%, *, +, -, /, ; \}$$
-   Dado que $\{ = \} \cap \{ \%, *, +, -, /, ; \} = \emptyset$, el conflicto queda completamente resuelto sin requerir *backtracking*.
+   - `PRED(StmtTail -> = Expr ;) = { = }`
+   - `PRED(StmtTail -> TermPrime ExprPrime ;) = { %, *, +, -, /, ; }`
+
+   Dado que `{ = } ∩ { %, *, +, -, /, ; } = ∅`, el conflicto queda completamente resuelto sin requerir *backtracking*.
 
 ### Componentes Formales
 
-- **Conjunto de No Terminales ($V_N$):**
+- **Conjunto de No Terminales ($V_N$):**  
   `{ Program, StmtList, Stmt, StmtTail, Expr, ExprPrime, Term, TermPrime, Factor, NonIdFactor }`
-- **Conjunto de Terminales ($V_T$):**
+- **Conjunto de Terminales ($V_T$):**  
   `{ id, num, =, +, -, *, /, %, (, ), abs, sin, cos, tan, ;, $ }`
-- **Símbolo Inicial ($S$):**
+- **Símbolo Inicial ($S$):**  
   `Program`
 
 ### Reglas de Producción
@@ -129,26 +134,26 @@ $$\text{FIRST}(\alpha) = \{ a \in V_T \mid \alpha \Rightarrow^* a \beta \} \cup 
 
 ### Conjuntos de SIGUIENTES (*FOLLOW*)
 
-$$\text{FOLLOW}(A) = \{ a \in V_T \cup \{ \$ \} \mid S \Rightarrow^* \alpha A a \beta \}$$
+$$\text{FOLLOW}(A) = \{ a \in V_T \cup \{ \text{EOF} \} \mid S \Rightarrow^* \alpha A a \beta \}$$
 
 | No Terminal | SIGUIENTES (*FOLLOW*) | Justificación Formal |
 |---|---|---|
 | `Program` | `{ $ }` | Símbolo inicial de la gramática |
 | `StmtList` | `{ $ }` | Fin del programa |
 | `Stmt` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Seguido por la siguiente sentencia o fin de cadena |
-| `StmtTail` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Heredado de $\text{FOLLOW}(Stmt)$ |
+| `StmtTail` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Heredado de `FOLLOW(Stmt)` |
 | `Expr` | `{ ), ; }` | Aparece antes de `;` o de cierre `)` |
 | `ExprPrime` | `{ ), ; }` | Cierre de expresión |
-| `Term` | `{ ), +, -, ; }` | $\text{FIRST}(Expr') \setminus \{\varepsilon\} \cup \text{FOLLOW}(Expr)$ |
-| `TermPrime` | `{ ), +, -, ; }` | Heredado de $\text{FOLLOW}(Term)$ |
-| `Factor` | `{ %, ), *, +, -, /, ; }` | $\text{FIRST}(Term') \setminus \{\varepsilon\} \cup \text{FOLLOW}(Term)$ |
-| `NonIdFactor` | `{ %, ), *, +, -, /, ; }` | Idéntico a $\text{FOLLOW}(Factor)$ y en $Stmt$ seguido de $Term' Expr' ;$ |
+| `Term` | `{ ), +, -, ; }` | `FIRST(Expr') \ { ε } ∪ FOLLOW(Expr)` |
+| `TermPrime` | `{ ), +, -, ; }` | Heredado de `FOLLOW(Term)` |
+| `Factor` | `{ %, ), *, +, -, /, ; }` | `FIRST(Term') \ { ε } ∪ FOLLOW(Term)` |
+| `NonIdFactor` | `{ %, ), *, +, -, /, ; }` | Idéntico a `FOLLOW(Factor)` y en `Stmt` seguido de `Term' Expr' ;` |
 
 ### Conjuntos de PREDICCIÓN (*SELECT*)
 
 $$\text{PRED}(A \to \alpha) = \begin{cases} \text{FIRST}(\alpha) & \text{si } \varepsilon \notin \text{FIRST}(\alpha) \\ (\text{FIRST}(\alpha) \setminus \{\varepsilon\}) \cup \text{FOLLOW}(A) & \text{si } \varepsilon \in \text{FIRST}(\alpha) \end{cases}$$
 
-| Regla ID | Regla de Producción | ¿Anulable? | Conjunto de Predicción $\text{PRED}(A \to \alpha)$ |
+| Regla ID | Regla de Producción | ¿Anulable? | Conjunto de Predicción PRED(A -> α) |
 |---|---|---|---|
 | **1** | `Program -> StmtList` | Sí | `{ $, (, -, abs, cos, id, num, sin, tan }` |
 | **2** | `StmtList -> Stmt StmtList` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
@@ -217,7 +222,7 @@ Evaluando cada no terminal con alternativas:
 
 ## Tabla de Análisis Sintáctico Predictivo LL(1)
 
-La siguiente tabla resume las transiciones $M[A, a]$ de la gramática. Cada celda indica la regla de producción que debe aplicarse cuando el no terminal $A$ se encuentra en el tope de la pila y el terminal $a$ es el símbolo de entrada:
+La siguiente tabla resume las transiciones `M[A, a]` de la gramática. Cada celda indica la regla de producción que debe aplicarse cuando el no terminal $A$ se encuentra en el tope de la pila y el terminal $a$ es el símbolo de entrada:
 
 | No Terminal | `id` | `num` | `=` | `+` | `-` | `*` | `/` | `%` | `(` | `)` | `abs` | `sin` | `cos` | `tan` | `;` | `$` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -232,7 +237,7 @@ La siguiente tabla resume las transiciones $M[A, a]$ de la gramática. Cada celd
 | **`Factor`** | (17) | (18) | | | (18) | | | | (18) | | (18) | (18) | (18) | (18) | | |
 | **`NonIdFactor`**| | (19) | | | (25) | | | | (20) | | (21) | (22) | (23) | (24) | | |
 
-*Nota: Todas las celdas en blanco representan errores sintácticos directos detectados en tiempo $O(1)$. Ninguna celda contiene más de una regla.*
+*Nota: Todas las celdas en blanco representan errores sintácticos directos detectados en tiempo O(1). Ninguna celda contiene más de una regla.*
 
 ---
 
@@ -260,7 +265,7 @@ Implementada en [`src/lexer.py`](file:///src/lexer.py):
 Implementada en [`src/parser_ll1.py`](file:///src/parser_ll1.py):
 1. **Parser de Tabla no recursivo ([`ParserTablaLL1`](file:///src/parser_ll1.py)):** Implementa el autómata de pila clásico de la teoría de compiladores:
    - Utiliza una pila de símbolos iniciada en `[$, Program]`.
-   - Consulta la tabla $M[Tope, Entrada]$.
+   - Consulta la tabla `M[Tope, Entrada]`.
    - Muestra la traza formal de sustitución en orden inverso.
 2. **Parser Predictivo para AST ([`ParserLL1`](file:///src/parser_ll1.py)):** Construye el Árbol de Sintaxis Abstracta preservando la precedencia de operadores y la asociatividad por la izquierda de la suma, resta, producto, división y módulo.
 
@@ -331,7 +336,7 @@ Muestra la definición formal $G$, los conjuntos calculados por algoritmo de pun
 python3 main.py --gramatica
 ```
 
-### 4. Visualizar la Tabla de Análisis Sintáctico LL(1) $M[A, a]$
+### 4. Visualizar la Tabla de Análisis Sintáctico LL(1) M[A, a]
 Muestra en formato de matriz tabular todas las 75 transiciones activas de la tabla predictiva:
 ```bash
 python3 main.py --tabla
@@ -408,7 +413,7 @@ OK
   - Detección y lanzamiento de excepción `LexerError` ante caracteres ilegales.
 - **`test_parser_ll1.py` (8 pruebas):**
   - Verificación formal de que la gramática cumple la condición LL(1) sin intersecciones.
-  - Validación de que la tabla $M[A, a]$ no contiene entradas múltiples (0 conflictos).
+  - Validación de que la tabla `M[A, a]` no contiene entradas múltiples (0 conflictos).
   - Reconocimiento y aceptación por el autómata con pila para sentencias complejas.
   - Comprobación de asociatividad hacia la izquierda en resta y división (`10 - 4 - 2` $\to$ `(10 - 4) - 2`).
   - Comprobación de precedencia de operadores (`*` y `/` antes de `+` y `-`).
