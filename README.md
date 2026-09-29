@@ -10,21 +10,16 @@
 
 ---
 
-## Enlace del Repositorio Oficial en GitHub
-- Repositorio: [https://github.com/TheMercury17/Tarea---Dise-o-de-Gramatica-LL-1-](https://github.com/TheMercury17/Tarea---Dise-o-de-Gramatica-LL-1-)
-
----
-
 ## Tabla de Contenidos
 1. [Descripción y Objetivos](#descripción-y-objetivos)
 2. [Diseño Formal de la Gramática LL(1)](#diseño-formal-de-la-gramática-ll1)
    - [Transformaciones para Cumplir la Condición LL(1)](#transformaciones-para-cumplir-la-condición-ll1)
-   - [Componentes Formales $G = (V_N, V_T, P, S)$](#componentes-formales-g--v_n-v_t-p-s)
+   - [Componentes Formales](#componentes-formales)
    - [Reglas de Producción](#reglas-de-producción)
 3. [Conjuntos de PRIMEROS, SIGUIENTES y PREDICCIÓN](#conjuntos-de-primeros-siguientes-y-predicción)
-   - [Conjuntos de PRIMEROS (*FIRST*)](#conjuntos-de-primeros-first)
-   - [Conjuntos de SIGUIENTES (*FOLLOW*)](#conjuntos-de-siguientes-follow)
-   - [Conjuntos de PREDICCIÓN (*SELECT*)](#conjuntos-de-predicción-select)
+   - [Conjuntos de PRIMEROS (FIRST)](#conjuntos-de-primeros-first)
+   - [Conjuntos de SIGUIENTES (FOLLOW)](#conjuntos-de-siguientes-follow)
+   - [Conjuntos de PREDICCIÓN (SELECT)](#conjuntos-de-predicción-select)
    - [Verificación Formal de la Condición LL(1)](#verificación-formal-de-la-condición-ll1)
 4. [Tabla de Análisis Sintáctico Predictivo LL(1)](#tabla-de-análisis-sintáctico-predictivo-ll1)
 5. [Arquitectura del Compilador / Intérprete](#arquitectura-del-compilador--intérprete)
@@ -32,7 +27,7 @@
    - [Fase Sintáctica (Parser LL(1) con Pila y AST)](#fase-sintáctica-parser-ll1-con-pila-y-ast)
    - [Fase Semántica (Tabla de Símbolos y Evaluación)](#fase-semántica-tabla-de-símbolos-y-evaluación)
 6. [Estructura del Proyecto](#estructura-del-proyecto)
-7. [Instrucciones de Ejecución](#instrucciones-de-ejecución)
+7. [Guía de Ejecución en Consola Linux](#guía-de-ejecución-en-consola-linux)
 8. [Suite de Pruebas Automatizadas](#suite-de-pruebas-automatizadas)
 9. [Conclusiones](#conclusiones)
 
@@ -70,14 +65,14 @@ Una gramática estándar para expresiones aritméticas y asignaciones presenta c
    $$\text{PRED}(StmtTail \to Term' Expr' ;) = \{ \%, *, +, -, /, ; \}$$
    Dado que $\{ = \} \cap \{ \%, *, +, -, /, ; \} = \emptyset$, el conflicto queda completamente resuelto sin requerir *backtracking*.
 
-### Componentes Formales $G = (V_N, V_T, P, S)$
+### Componentes Formales
 
 - **Conjunto de No Terminales ($V_N$):**
-  $$V_N = \{ \text{Program}, \text{StmtList}, \text{Stmt}, \text{StmtTail}, \text{Expr}, \text{ExprPrime}, \text{Term}, \text{TermPrime}, \text{Factor}, \text{NonIdFactor} \}$$
+  `{ Program, StmtList, Stmt, StmtTail, Expr, ExprPrime, Term, TermPrime, Factor, NonIdFactor }`
 - **Conjunto de Terminales ($V_T$):**
-  $$V_T = \{ id, num, =, +, -, *, /, \%, (, ), abs, sin, cos, tan, ;, \$ \}$$
+  `{ id, num, =, +, -, *, /, %, (, ), abs, sin, cos, tan, ;, $ }`
 - **Símbolo Inicial ($S$):**
-  $$S = \text{Program}$$
+  `Program`
 
 ### Reglas de Producción
 
@@ -85,7 +80,7 @@ Una gramática estándar para expresiones aritméticas y asignaciones presenta c
 |---|---|---|---|
 | **1** | `Program` | `StmtList` | Símbolo inicial que deriva en una lista de sentencias |
 | **2** | `StmtList` | `Stmt StmtList` | Secuencia de una sentencia seguida por más sentencias |
-| **3** | `StmtList` | $\varepsilon$ | Fin de la lista de sentencias (cadena vacía) |
+| **3** | `StmtList` | `ε` | Fin de la lista de sentencias (cadena vacía) |
 | **4** | `Stmt` | `id StmtTail` | Sentencia que inicia con un identificador (asignación o expresión con variable) |
 | **5** | `Stmt` | `NonIdFactor TermPrime ExprPrime ;` | Sentencia que inicia con literal numérico, función matemática o paréntesis |
 | **6** | `StmtTail` | `= Expr ;` | Asignación de variable |
@@ -93,12 +88,12 @@ Una gramática estándar para expresiones aritméticas y asignaciones presenta c
 | **8** | `Expr` | `Term ExprPrime` | Expresión aritmética (asociatividad por la izquierda simulada) |
 | **9** | `ExprPrime` | `+ Term ExprPrime` | Operador de suma binaria |
 | **10** | `ExprPrime` | `- Term ExprPrime` | Operador de resta binaria |
-| **11** | `ExprPrime` | $\varepsilon$ | Derivación nula de términos adicionales de adición/sustracción |
+| **11** | `ExprPrime` | `ε` | Derivación nula de términos adicionales de adición/sustracción |
 | **12** | `Term` | `Factor TermPrime` | Término multiplicativo |
 | **13** | `TermPrime` | `* Factor TermPrime` | Operador de multiplicación binaria |
 | **14** | `TermPrime` | `/ Factor TermPrime` | Operador de división binaria |
 | **15** | `TermPrime` | `% Factor TermPrime` | Operador de módulo |
-| **16** | `TermPrime` | $\varepsilon$ | Derivación nula de factores adicionales de producto/cociente/módulo |
+| **16** | `TermPrime` | `ε` | Derivación nula de factores adicionales de producto/cociente/módulo |
 | **17** | `Factor` | `id` | Variable en factor |
 | **18** | `Factor` | `NonIdFactor` | Factor no identificador |
 | **19** | `NonIdFactor` | `num` | Constante numérica (entera o decimal) |
@@ -121,16 +116,16 @@ $$\text{FIRST}(\alpha) = \{ a \in V_T \mid \alpha \Rightarrow^* a \beta \} \cup 
 
 | No Terminal | PRIMEROS (*FIRST*) |
 |---|---|
-| `Program` | $\{ (, -, abs, cos, id, num, sin, tan, \varepsilon \}$ |
-| `StmtList` | $\{ (, -, abs, cos, id, num, sin, tan, \varepsilon \}$ |
-| `Stmt` | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| `StmtTail` | $\{ \%, *, +, -, /, ;, = \}$ |
-| `Expr` | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| `ExprPrime` | $\{ +, -, \varepsilon \}$ |
-| `Term` | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| `TermPrime` | $\{ \%, *, /, \varepsilon \}$ |
-| `Factor` | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| `NonIdFactor` | $\{ (, -, abs, cos, num, sin, tan \}$ |
+| `Program` | `{ (, -, abs, cos, id, num, sin, tan, ε }` |
+| `StmtList` | `{ (, -, abs, cos, id, num, sin, tan, ε }` |
+| `Stmt` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `StmtTail` | `{ %, *, +, -, /, ;, = }` |
+| `Expr` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `ExprPrime` | `{ +, -, ε }` |
+| `Term` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `TermPrime` | `{ %, *, /, ε }` |
+| `Factor` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `NonIdFactor` | `{ (, -, abs, cos, num, sin, tan }` |
 
 ### Conjuntos de SIGUIENTES (*FOLLOW*)
 
@@ -138,16 +133,16 @@ $$\text{FOLLOW}(A) = \{ a \in V_T \cup \{ \$ \} \mid S \Rightarrow^* \alpha A a 
 
 | No Terminal | SIGUIENTES (*FOLLOW*) | Justificación Formal |
 |---|---|---|
-| `Program` | $\{ \$ \}$ | Símbolo inicial de la gramática |
-| `StmtList` | $\{ \$ \}$ | Fin del programa |
-| `Stmt` | $\{ \$, (, -, abs, cos, id, num, sin, tan \}$ | Seguido por la siguiente sentencia o fin de cadena |
-| `StmtTail` | $\{ \$, (, -, abs, cos, id, num, sin, tan \}$ | Heredado de $\text{FOLLOW}(Stmt)$ |
-| `Expr` | $\{ ), ; \}$ | Aparece antes de `;` o de cierre `)` |
-| `ExprPrime` | $\{ ), ; \}$ | Cierre de expresión |
-| `Term` | $\{ ), +, -, ; \}$ | $\text{FIRST}(Expr') \setminus \{\varepsilon\} \cup \text{FOLLOW}(Expr)$ |
-| `TermPrime` | $\{ ), +, -, ; \}$ | Heredado de $\text{FOLLOW}(Term)$ |
-| `Factor` | $\{ \%, ), *, +, -, /, ; \}$ | $\text{FIRST}(Term') \setminus \{\varepsilon\} \cup \text{FOLLOW}(Term)$ |
-| `NonIdFactor` | $\{ \%, ), *, +, -, /, ; \}$ | Idéntico a $\text{FOLLOW}(Factor)$ y en $Stmt$ seguido de $Term' Expr' ;$ |
+| `Program` | `{ $ }` | Símbolo inicial de la gramática |
+| `StmtList` | `{ $ }` | Fin del programa |
+| `Stmt` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Seguido por la siguiente sentencia o fin de cadena |
+| `StmtTail` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Heredado de $\text{FOLLOW}(Stmt)$ |
+| `Expr` | `{ ), ; }` | Aparece antes de `;` o de cierre `)` |
+| `ExprPrime` | `{ ), ; }` | Cierre de expresión |
+| `Term` | `{ ), +, -, ; }` | $\text{FIRST}(Expr') \setminus \{\varepsilon\} \cup \text{FOLLOW}(Expr)$ |
+| `TermPrime` | `{ ), +, -, ; }` | Heredado de $\text{FOLLOW}(Term)$ |
+| `Factor` | `{ %, ), *, +, -, /, ; }` | $\text{FIRST}(Term') \setminus \{\varepsilon\} \cup \text{FOLLOW}(Term)$ |
+| `NonIdFactor` | `{ %, ), *, +, -, /, ; }` | Idéntico a $\text{FOLLOW}(Factor)$ y en $Stmt$ seguido de $Term' Expr' ;$ |
 
 ### Conjuntos de PREDICCIÓN (*SELECT*)
 
@@ -155,61 +150,68 @@ $$\text{PRED}(A \to \alpha) = \begin{cases} \text{FIRST}(\alpha) & \text{si } \v
 
 | Regla ID | Regla de Producción | ¿Anulable? | Conjunto de Predicción $\text{PRED}(A \to \alpha)$ |
 |---|---|---|---|
-| **1** | `Program -> StmtList` | Sí | $\{ \$, (, -, abs, cos, id, num, sin, tan \}$ |
-| **2** | `StmtList -> Stmt StmtList` | No | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| **3** | `StmtList -> ε` | Sí | $\{ \$ \}$ |
-| **4** | `Stmt -> id StmtTail` | No | $\{ id \}$ |
-| **5** | `Stmt -> NonIdFactor TermPrime ExprPrime ;` | No | $\{ (, -, abs, cos, num, sin, tan \}$ |
-| **6** | `StmtTail -> = Expr ;` | No | $\{ = \}$ |
-| **7** | `StmtTail -> TermPrime ExprPrime ;` | No | $\{ \%, *, +, -, /, ; \}$ |
-| **8** | `Expr -> Term ExprPrime` | No | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| **9** | `ExprPrime -> + Term ExprPrime` | No | $\{ + \}$ |
-| **10** | `ExprPrime -> - Term ExprPrime` | No | $\{ - \}$ |
-| **11** | `ExprPrime -> ε` | Sí | $\{ ), ; \}$ |
-| **12** | `Term -> Factor TermPrime` | No | $\{ (, -, abs, cos, id, num, sin, tan \}$ |
-| **13** | `TermPrime -> * Factor TermPrime` | No | $\{ * \}$ |
-| **14** | `TermPrime -> / Factor TermPrime` | No | $\{ / \}$ |
-| **15** | `TermPrime -> % Factor TermPrime` | No | $\{ \% \}$ |
-| **16** | `TermPrime -> ε` | Sí | $\{ ), +, -, ; \}$ |
-| **17** | `Factor -> id` | No | $\{ id \}$ |
-| **18** | `Factor -> NonIdFactor` | No | $\{ (, -, abs, cos, num, sin, tan \}$ |
-| **19** | `NonIdFactor -> num` | No | $\{ num \}$ |
-| **20** | `NonIdFactor -> ( Expr )` | No | $\{ ( \}$ |
-| **21** | `NonIdFactor -> abs ( Expr )` | No | $\{ abs \}$ |
-| **22** | `NonIdFactor -> sin ( Expr )` | No | $\{ sin \}$ |
-| **23** | `NonIdFactor -> cos ( Expr )` | No | $\{ cos \}$ |
-| **24** | `NonIdFactor -> tan ( Expr )` | No | $\{ tan \}$ |
-| **25** | `NonIdFactor -> - Factor` | No | $\{ - \}$ |
+| **1** | `Program -> StmtList` | Sí | `{ $, (, -, abs, cos, id, num, sin, tan }` |
+| **2** | `StmtList -> Stmt StmtList` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
+| **3** | `StmtList -> ε` | Sí | `{ $ }` |
+| **4** | `Stmt -> id StmtTail` | No | `{ id }` |
+| **5** | `Stmt -> NonIdFactor TermPrime ExprPrime ;` | No | `{ (, -, abs, cos, num, sin, tan }` |
+| **6** | `StmtTail -> = Expr ;` | No | `{ = }` |
+| **7** | `StmtTail -> TermPrime ExprPrime ;` | No | `{ %, *, +, -, /, ; }` |
+| **8** | `Expr -> Term ExprPrime` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
+| **9** | `ExprPrime -> + Term ExprPrime` | No | `{ + }` |
+| **10** | `ExprPrime -> - Term ExprPrime` | No | `{ - }` |
+| **11** | `ExprPrime -> ε` | Sí | `{ ), ; }` |
+| **12** | `Term -> Factor TermPrime` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
+| **13** | `TermPrime -> * Factor TermPrime` | No | `{ * }` |
+| **14** | `TermPrime -> / Factor TermPrime` | No | `{ / }` |
+| **15** | `TermPrime -> % Factor TermPrime` | No | `{ % }` |
+| **16** | `TermPrime -> ε` | Sí | `{ ), +, -, ; }` |
+| **17** | `Factor -> id` | No | `{ id }` |
+| **18** | `Factor -> NonIdFactor` | No | `{ (, -, abs, cos, num, sin, tan }` |
+| **19** | `NonIdFactor -> num` | No | `{ num }` |
+| **20** | `NonIdFactor -> ( Expr )` | No | `{ ( }` |
+| **21** | `NonIdFactor -> abs ( Expr )` | No | `{ abs }` |
+| **22** | `NonIdFactor -> sin ( Expr )` | No | `{ sin }` |
+| **23** | `NonIdFactor -> cos ( Expr )` | No | `{ cos }` |
+| **24** | `NonIdFactor -> tan ( Expr )` | No | `{ tan }` |
+| **25** | `NonIdFactor -> - Factor` | No | `{ - }` |
 
 ### Verificación Formal de la Condición LL(1)
 
 Una gramática es **LL(1)** si y solo si, para todo no terminal $A$ con reglas alternativas $A \to \alpha_1 \mid \alpha_2 \mid \dots \mid \alpha_k$, se verifica:
 $$\text{PRED}(A \to \alpha_i) \cap \text{PRED}(A \to \alpha_j) = \emptyset \quad \forall i \neq j$$
 
-Evaluando cada caso:
-1. **`StmtList`**:
-   $$\text{PRED}(R2) \cap \text{PRED}(R3) = \{ (, -, abs, cos, id, num, sin, tan \} \cap \{ \$ \} = \emptyset \quad \checkmark$$
-2. **`Stmt`**:
-   $$\text{PRED}(R4) \cap \text{PRED}(R5) = \{ id \} \cap \{ (, -, abs, cos, num, sin, tan \} = \emptyset \quad \checkmark$$
-3. **`StmtTail`**:
-   $$\text{PRED}(R6) \cap \text{PRED}(R7) = \{ = \} \cap \{ \%, *, +, -, /, ; \} = \emptyset \quad \checkmark$$
-4. **`ExprPrime`**:
-   $$\text{PRED}(R9) \cap \text{PRED}(R10) = \{ + \} \cap \{ - \} = \emptyset$$
-   $$\text{PRED}(R9) \cap \text{PRED}(R11) = \{ + \} \cap \{ ), ; \} = \emptyset$$
-   $$\text{PRED}(R10) \cap \text{PRED}(R11) = \{ - \} \cap \{ ), ; \} = \emptyset \quad \checkmark$$
-5. **`TermPrime`**:
-   $$\text{PRED}(R13) \cap \text{PRED}(R14) = \{ * \} \cap \{ / \} = \emptyset$$
-   $$\text{PRED}(R13) \cap \text{PRED}(R15) = \{ * \} \cap \{ \% \} = \emptyset$$
-   $$\text{PRED}(R13) \cap \text{PRED}(R16) = \{ * \} \cap \{ ), +, -, ; \} = \emptyset$$
-   $$\text{PRED}(R14) \cap \text{PRED}(R15) = \{ / \} \cap \{ \% \} = \emptyset$$
-   $$\text{PRED}(R14) \cap \text{PRED}(R16) = \{ / \} \cap \{ ), +, -, ; \} = \emptyset$$
-   $$\text{PRED}(R15) \cap \text{PRED}(R16) = \{ \% \} \cap \{ ), +, -, ; \} = \emptyset \quad \checkmark$$
-6. **`Factor`**:
-   $$\text{PRED}(R17) \cap \text{PRED}(R18) = \{ id \} \cap \{ (, -, abs, cos, num, sin, tan \} = \emptyset \quad \checkmark$$
-7. **`NonIdFactor`**:
-   Las reglas $19, 20, 21, 22, 23, 24, 25$ tienen como conjuntos directores los conjuntos unitarios $\{ num \}$, $\{ ( \}$, $\{ abs \}$, $\{ sin \}$, $\{ cos \}$, $\{ tan \}$ y $\{ - \}$. Todos son disjuntos dos a dos. $\checkmark$
+Evaluando cada no terminal con alternativas:
 
-**Conclusión:** La gramática es **ESTRICTAMENTE LL(1) Y NO PRESENTA CONFLICTOS**.
+1. **`StmtList`**:
+   - `PRED(R2) ∩ PRED(R3) = { (, -, abs, cos, id, num, sin, tan } ∩ { $ } = ∅` (Disjuntos ✓)
+
+2. **`Stmt`**:
+   - `PRED(R4) ∩ PRED(R5) = { id } ∩ { (, -, abs, cos, num, sin, tan } = ∅` (Disjuntos ✓)
+
+3. **`StmtTail`**:
+   - `PRED(R6) ∩ PRED(R7) = { = } ∩ { %, *, +, -, /, ; } = ∅` (Disjuntos ✓)
+
+4. **`ExprPrime`**:
+   - `PRED(R9) ∩ PRED(R10) = { + } ∩ { - } = ∅`
+   - `PRED(R9) ∩ PRED(R11) = { + } ∩ { ), ; } = ∅`
+   - `PRED(R10) ∩ PRED(R11) = { - } ∩ { ), ; } = ∅` (Disjuntos ✓)
+
+5. **`TermPrime`**:
+   - `PRED(R13) ∩ PRED(R14) = { * } ∩ { / } = ∅`
+   - `PRED(R13) ∩ PRED(R15) = { * } ∩ { % } = ∅`
+   - `PRED(R13) ∩ PRED(R16) = { * } ∩ { ), +, -, ; } = ∅`
+   - `PRED(R14) ∩ PRED(R15) = { / } ∩ { % } = ∅`
+   - `PRED(R14) ∩ PRED(R16) = { / } ∩ { ), +, -, ; } = ∅`
+   - `PRED(R15) ∩ PRED(R16) = { % } ∩ { ), +, -, ; } = ∅` (Disjuntos ✓)
+
+6. **`Factor`**:
+   - `PRED(R17) ∩ PRED(R18) = { id } ∩ { (, -, abs, cos, num, sin, tan } = ∅` (Disjuntos ✓)
+
+7. **`NonIdFactor`**:
+   - Las reglas 19 a 25 tienen como conjuntos de predicción los conjuntos directores unitarios `{ num }`, `{ ( }`, `{ abs }`, `{ sin }`, `{ cos }`, `{ tan }` y `{ - }`. Todos son disjuntos dos a dos. (Disjuntos ✓)
+
+**Conclusión:** La gramática es **ESTRICTAMENTE LL(1) Y NO PRESENTA NINGÚN CONFLICTO**.
 
 ---
 
@@ -307,45 +309,72 @@ Tarea - Gramatica LL(1)/
 
 ---
 
-## Instrucciones de Ejecución
+## Guía de Ejecución en Consola Linux
 
-El proyecto utiliza exclusivamente la librería estándar de Python 3.8+.
+El proyecto está diseñado para ejecutarse directamente en cualquier distribución **Linux** (Ubuntu, Debian, Fedora, Arch, WSL, etc.) utilizando **Python 3.8+** (utiliza únicamente la biblioteca estándar, sin necesidad de dependencias externas obligatorias).
 
-### 1. Visualizar la Gramática Formal y Conjuntos de Predicción
+### 1. Requisitos Previos en Linux
+Verifique que dispone de Python 3 instalado en su terminal Linux:
 ```bash
-python main.py --gramatica
+python3 --version
+```
+*(Si no está instalado en Ubuntu/Debian: `sudo apt update && sudo apt install -y python3`)*
+
+### 2. Ubicarse en el Directorio del Proyecto
+```bash
+cd "Tarea - Gramatica LL(1)"
 ```
 
-### 2. Visualizar la Tabla de Análisis Sintáctico LL(1)
+### 3. Visualizar la Gramática Formal, PRIMEROS, SIGUIENTES y PREDICCIÓN
+Muestra la definición formal $G$, los conjuntos calculados por algoritmo de punto fijo y la verificación matemática de la condición LL(1):
 ```bash
-python main.py --tabla
+python3 main.py --gramatica
 ```
 
-### 3. Ejecutar un Archivo Fuente con Traza de Pila
+### 4. Visualizar la Tabla de Análisis Sintáctico LL(1) $M[A, a]$
+Muestra en formato de matriz tabular todas las 75 transiciones activas de la tabla predictiva:
 ```bash
-python main.py --archivo ejemplos/05_programa_completo.txt --traza
+python3 main.py --tabla
 ```
 
-### 4. Modo Demostración de Casos Guiados
+### 5. Ejecutar un Archivo Fuente con Traza Paso a Paso en Pila
+Ejecuta el programa mostrando cada paso del autómata de pila: `(Paso, Pila, Entrada restante, Regla aplicada)`:
 ```bash
-python main.py --demo
+python3 main.py --archivo ejemplos/05_programa_completo.txt --traza
+```
+*(Para ejecutar sin traza, omita el parámetro `--traza`)*:
+```bash
+python3 main.py --archivo ejemplos/01_aritmetica.txt
+python3 main.py --archivo ejemplos/02_trigonometria.txt
+python3 main.py --archivo ejemplos/03_modulo_y_abs.txt
+python3 main.py --archivo ejemplos/04_variables.txt
 ```
 
-### 5. Consola Interactiva (REPL)
-Permite escribir sentencias en tiempo real:
+### 6. Ejecutar Demostración Automática de Casos de Prueba
+Corre de forma secuencial 5 casos de prueba guiados (Aritmética, Valor Absoluto, Trigonometría, Variables y Manejo de Errores):
 ```bash
-python main.py --repl
+python3 main.py --demo
 ```
-*Ejemplo en consola:*
+
+### 7. Consola Interactiva (REPL) en Linux
+Inicia una sesión interactiva en la terminal donde puede ingresar sentencias terminadas en `;` y ver resultados en tiempo real:
+```bash
+python3 main.py --repl
+```
+*Ejemplo de sesión en consola Linux:*
 ```text
-LL1> radio = 10;
-  [Asignación] radio = 10
-LL1> area = 3.14159 * (radio * radio);
-  [Asignación] area = 314.159
-LL1> sin(0) + cos(0);
-  [Expresión] Resultado: 1.0
+LL1> x = 20;
+  [Asignación] x = 20
+LL1> y = abs(-15) + (x % 6);
+  [Asignación] y = 17
+LL1> z = sin(0) + cos(0);
+  [Asignación] z = 1.0
+LL1> resultado = (y * 2) - z;
+  [Asignación] resultado = 33.0
+LL1> resultado;
+  [Expresión] Resultado: 33.0
 LL1> tabla
-Variables actuales: {'radio': 10, 'area': 314.159}
+Variables actuales: {'x': 20, 'y': 17, 'z': 1.0, 'resultado': 33.0}
 LL1> salir
 ```
 
@@ -353,13 +382,14 @@ LL1> salir
 
 ## Suite de Pruebas Automatizadas
 
-El proyecto incluye 25 pruebas automatizadas desarrolladas con `unittest`. Para ejecutarlas:
+El proyecto cuenta con una batería de **25 pruebas unitarias e integrales** automatizadas bajo el framework `unittest`.
 
+Para ejecutar toda la suite en Linux:
 ```bash
-python -m unittest discover tests
+python3 -m unittest discover tests
 ```
 
-### Salida de la Ejecución de Pruebas:
+### Salida esperada en terminal Linux:
 ```text
 .........................
 ----------------------------------------------------------------------
@@ -368,11 +398,33 @@ Ran 25 tests in 0.010s
 OK
 ```
 
-### Cobertura de las Pruebas:
-- **`test_lexer.py`:** Pruebas de tokens aritméticos, literales flotantes/enteros, identificadores, palabras clave trigonométricas (`sin`, `sen`, `cos`, `tan`), comentarios y detección de caracteres ilegales.
-- **`test_parser_ll1.py`:** Verificación formal de la condición LL(1), validación de tabla sin duplicados, traza con pila para derivaciones complejas, precedencia de operadores, asociatividad izquierda y errores sintácticos (paréntesis desbalanceados, omisión de punto y coma, etc.).
-- **`test_semantic.py`:** Pruebas de evaluación aritmética (`+`, `-`, `*`, `/`, `%`), funciones de valor absoluto (`abs`), trigonometría en radianes, asignación y persistencia en memoria, detección de variables no inicializadas, división por cero, módulo por cero y asíntotas de tangente.
-- **`test_integration.py`:** Pipeline integral que procesa un programa con 15 sentencias consecutivas combinando todas las características solicitadas.
+### Desglose de Cobertura de Pruebas:
+- **`test_lexer.py` (7 pruebas):**
+  - Identificación de operadores binarios (`+`, `-`, `*`, `/`, `%`) y asignación (`=`).
+  - Reconocimiento de números enteros y flotantes (incluyendo notación científica).
+  - Reconocimiento de palabras reservadas matemáticas (`sin`, `sen`, `cos`, `tan`, `abs`).
+  - Reconocimiento de identificadores válidos.
+  - Omisión correcta de espacios y comentarios de una línea (`//`, `#`).
+  - Detección y lanzamiento de excepción `LexerError` ante caracteres ilegales.
+- **`test_parser_ll1.py` (8 pruebas):**
+  - Verificación formal de que la gramática cumple la condición LL(1) sin intersecciones.
+  - Validación de que la tabla $M[A, a]$ no contiene entradas múltiples (0 conflictos).
+  - Reconocimiento y aceptación por el autómata con pila para sentencias complejas.
+  - Comprobación de asociatividad hacia la izquierda en resta y división (`10 - 4 - 2` $\to$ `(10 - 4) - 2`).
+  - Comprobación de precedencia de operadores (`*` y `/` antes de `+` y `-`).
+  - Reconocimiento de funciones trigonométricas y valor absoluto anidados.
+  - Detección precisa de errores sintácticos (omisión de punto y coma, paréntesis desbalanceados, operadores duplicados).
+- **`test_semantic.py` (9 pruebas):**
+  - Evaluación exacta de operaciones aritméticas básicas (`+`, `-`, `*`, `/`, `%`).
+  - Evaluación de valor absoluto (`abs`) para expresiones positivas, negativas y compuestas.
+  - Evaluación de funciones trigonométricas en radianes (`sin`, `cos`, `tan`) e identidades notables.
+  - Asignación y reutilización de variables en memoria.
+  - Detección y lanzamiento de `SemanticError` para variables no definidas.
+  - Detección y detención de divisiones por cero (`x / 0`).
+  - Detección y detención de módulo por cero (`x % 0`).
+  - Detección de discontinuidades / asíntotas verticales en tangente.
+- **`test_integration.py` (1 prueba de integración):**
+  - Pipeline continuo que procesa 15 sentencias consecutivas validando Léxico, Sintáctico (Pila y AST) y Semántico conjuntamente.
 
 ---
 
