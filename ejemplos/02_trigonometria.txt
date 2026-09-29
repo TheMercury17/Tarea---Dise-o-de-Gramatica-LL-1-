@@ -1,0 +1,22 @@
+// Ejemplo 2: Funciones Trigonométricas (sin, cos, tan)
+// Universidad Sergio Arboleda - Lenguajes de Programación y Transducción
+// Docente: Joaquin F. Sanchez
+// Grupo 5: Andrés Sebastián Coral Vallejo & Carol Arenas Cardona
+
+pi = 3.141592653589793;
+
+// Ángulos notables
+ang_0 = 0;
+ang_30 = pi / 6;
+ang_45 = pi / 4;
+
+// Seno, Coseno y Tangente de 0
+seno_cero = sin(ang_0);
+coseno_cero = cos(ang_0);
+tangente_cero = tan(ang_0);
+
+// Identidad fundamental de la trigonometría: sen^2(x) + cos^2(x) = 1
+seno_45 = sin(ang_45);
+coseno_45 = cos(ang_45);
+identidad = (seno_45 * seno_45) + (coseno_45 * coseno_45);
+identidad;

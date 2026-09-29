@@ -1,0 +1,16 @@
+// Ejemplo 4: Asignación y Reutilización de Variables
+// Universidad Sergio Arboleda - Lenguajes de Programación y Transducción
+// Docente: Joaquin F. Sanchez
+// Grupo 5: Andrés Sebastián Coral Vallejo & Carol Arenas Cardona
+
+// Cálculo del área y volumen de una esfera: V = (4/3) * pi * r^3
+radio = 6;
+pi = 3.14159265;
+
+area_circulo = pi * (radio * radio);
+volumen_esfera = (4 / 3) * pi * (radio * radio * radio);
+
+// Reutilización en variables compuestas
+densidad = 2.5;
+masa = volumen_esfera * densidad;
+masa;

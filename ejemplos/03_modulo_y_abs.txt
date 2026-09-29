@@ -1,0 +1,18 @@
+// Ejemplo 3: Módulo (%) y Valor Absoluto (abs)
+// Universidad Sergio Arboleda - Lenguajes de Programación y Transducción
+// Docente: Joaquin F. Sanchez
+// Grupo 5: Andrés Sebastián Coral Vallejo & Carol Arenas Cardona
+
+num_negativo = -128.65;
+valor_positivo = abs(num_negativo);
+
+// Operaciones de módulo con números enteros
+dividendo = 53;
+divisor = 7;
+residuo = dividendo % divisor;
+
+// Combinación de valor absoluto y módulo
+diferencia = 15 - 49;
+abs_diferencia = abs(diferencia);
+resultado_mod = abs_diferencia % 5;
+resultado_mod;

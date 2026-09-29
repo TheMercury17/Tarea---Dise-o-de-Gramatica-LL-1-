@@ -1,0 +1,20 @@
+// Ejemplo 1: Operaciones Aritméticas Básicas y Precedencia
+// Universidad Sergio Arboleda - Lenguajes de Programación y Transducción
+// Docente: Joaquin F. Sanchez
+// Grupo 5: Andrés Sebastián Coral Vallejo & Carol Arenas Cardona
+
+a = 15;
+b = 4;
+suma = a + b;
+resta = a - b;
+producto = a * b;
+division = a / b;
+
+// Evaluación con precedencia de operadores (* antes de +)
+precedencia = a + b * 2;
+agrupado = (a + b) * 2;
+
+// Menos unario y expresiones compuestas
+negativo = - (a * 2);
+final = precedencia + agrupado + negativo;
+final;
