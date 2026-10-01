@@ -12,15 +12,16 @@ s = sin(angulo);
 c = cos(angulo);
 t = tan(angulo);
 
-// 3. Valor Absoluto y Módulo
-error = abs(t - 1.0);
-residuo = 100 % 30;
-
-// 4. Operaciones Aritméticas Combinadas (+, -, *, /, %)
+// 3. Operaciones Aritméticas Combinadas (+, -, *, /, %)
 potencia_seno = s * s;
 potencia_coseno = c * c;
 suma_cuadrados = potencia_seno + potencia_coseno;
 
+// 4. Valor Absoluto, Módulo y Raíz Cuadrada
+error = abs(t - 1.0);
+residuo = 100 % 30;
+modulo_vectorial = sqrt(suma_cuadrados);
+
 // 5. Expresión Final
-resultado = (suma_cuadrados * 10) + residuo - error;
+resultado = (suma_cuadrados * 10) + residuo - error + modulo_vectorial;
 resultado;

@@ -158,7 +158,7 @@ class ParserLL1:
         statements: List[ASTNode] = []
         terminales_stmt = {
             TokenType.ID, TokenType.NUM, TokenType.LPAREN,
-            TokenType.ABS, TokenType.SIN, TokenType.COS, TokenType.TAN, TokenType.MINUS
+            TokenType.ABS, TokenType.SQRT, TokenType.SIN, TokenType.COS, TokenType.TAN, TokenType.MINUS
         }
 
         while self.current_token.type in terminales_stmt:
@@ -310,6 +310,13 @@ class ParserLL1:
             expr = self.parse_expr()
             self.match(TokenType.RPAREN)
             return FunctionCallNode("abs", expr)
+
+        elif token.type == TokenType.SQRT:
+            self.match(TokenType.SQRT)
+            self.match(TokenType.LPAREN)
+            expr = self.parse_expr()
+            self.match(TokenType.RPAREN)
+            return FunctionCallNode("sqrt", expr)
 
         elif token.type == TokenType.SIN:
             self.match(TokenType.SIN)

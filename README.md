@@ -40,12 +40,13 @@ El presente trabajo comprende el diseño formal, análisis matemático e impleme
 El lenguaje desarrollado satisface integralmente los requerimientos solicitados:
 1. **Operaciones Aritméticas Básicas:** Suma (`+`), Resta (`-`), Multiplicación (`*`), División (`/`) y Módulo (`%`).
 2. **Valor Absoluto:** Función unaria `abs(Expr)`.
-3. **Funciones Trigonométricas:** Seno (`sin(Expr)` / `sen(Expr)`), Coseno (`cos(Expr)`), Tangente (`tan(Expr)`).
-4. **Asignación y Reutilización de Variables:** Sentencias de asignación imperativa (`id = Expr;`) y soporte de expresiones independientes (`Expr;`).
-5. **Garantía y Aislamiento de Fases:**
+3. **Raíz Cuadrada:** Función unaria `sqrt(Expr)` (con soporte para el alias en español `raiz(Expr)`).
+4. **Funciones Trigonométricas:** Seno (`sin(Expr)` / `sen(Expr)`), Coseno (`cos(Expr)`), Tangente (`tan(Expr)`).
+5. **Asignación y Reutilización de Variables:** Sentencias de asignación imperativa (`id = Expr;`) y soporte de expresiones independientes (`Expr;`).
+6. **Garantía y Aislamiento de Fases:**
    - **Léxica:** Tokenizador formal basado en expresiones regulares y gestión de errores posicionales.
    - **Sintáctica:** Algoritmo iterativo de punto fijo para PRIMEROS/SIGUIENTES/PREDICCIÓN, tabla de análisis sintáctico `M[A, a]` y reconocimiento no recursivo con pila explícita y generación de AST.
-   - **Semántica:** Tabla de símbolos (entorno de variables), detección de variables indefinidas, control de divisiones por cero, módulo por cero y asíntotas trigonométricas.
+   - **Semántica:** Tabla de símbolos (entorno de variables), detección de variables indefinidas, control de divisiones por cero, módulo por cero, raíces cuadradas de números negativos y asíntotas trigonométricas.
 
 ---
 
@@ -75,7 +76,7 @@ Una gramática estándar para expresiones aritméticas y asignaciones presenta c
 - **Conjunto de No Terminales ($V_N$):**  
   `{ Program, StmtList, Stmt, StmtTail, Expr, ExprPrime, Term, TermPrime, Factor, NonIdFactor }`
 - **Conjunto de Terminales ($V_T$):**  
-  `{ id, num, =, +, -, *, /, %, (, ), abs, sin, cos, tan, ;, $ }`
+  `{ id, num, =, +, -, *, /, %, (, ), abs, sqrt, sin, cos, tan, ;, $ }`
 - **Símbolo Inicial ($S$):**  
   `Program`
 
@@ -107,7 +108,8 @@ Una gramática estándar para expresiones aritméticas y asignaciones presenta c
 | **22** | `NonIdFactor` | `sin ( Expr )` | Función trigonométrica seno |
 | **23** | `NonIdFactor` | `cos ( Expr )` | Función trigonométrica coseno |
 | **24** | `NonIdFactor` | `tan ( Expr )` | Función trigonométrica tangente |
-| **25** | `NonIdFactor` | `- Factor` | Operador menos unario |
+| **25** | `NonIdFactor` | `sqrt ( Expr )` | Función matemática de raíz cuadrada |
+| **26** | `NonIdFactor` | `- Factor` | Operador menos unario |
 
 ---
 
@@ -121,16 +123,16 @@ $$\text{FIRST}(\alpha) = \{ a \in V_T \mid \alpha \Rightarrow^* a \beta \} \cup 
 
 | No Terminal | PRIMEROS (*FIRST*) |
 |---|---|
-| `Program` | `{ (, -, abs, cos, id, num, sin, tan, ε }` |
-| `StmtList` | `{ (, -, abs, cos, id, num, sin, tan, ε }` |
-| `Stmt` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `Program` | `{ (, -, abs, cos, id, num, sin, sqrt, tan, ε }` |
+| `StmtList` | `{ (, -, abs, cos, id, num, sin, sqrt, tan, ε }` |
+| `Stmt` | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
 | `StmtTail` | `{ %, *, +, -, /, ;, = }` |
-| `Expr` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `Expr` | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
 | `ExprPrime` | `{ +, -, ε }` |
-| `Term` | `{ (, -, abs, cos, id, num, sin, tan }` |
+| `Term` | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
 | `TermPrime` | `{ %, *, /, ε }` |
-| `Factor` | `{ (, -, abs, cos, id, num, sin, tan }` |
-| `NonIdFactor` | `{ (, -, abs, cos, num, sin, tan }` |
+| `Factor` | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
+| `NonIdFactor` | `{ (, -, abs, cos, num, sin, sqrt, tan }` |
 
 ### Conjuntos de SIGUIENTES (*FOLLOW*)
 
@@ -140,8 +142,8 @@ $$\text{FOLLOW}(A) = \{ a \in V_T \cup \{ \text{EOF} \} \mid S \Rightarrow^* \al
 |---|---|---|
 | `Program` | `{ $ }` | Símbolo inicial de la gramática |
 | `StmtList` | `{ $ }` | Fin del programa |
-| `Stmt` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Seguido por la siguiente sentencia o fin de cadena |
-| `StmtTail` | `{ $, (, -, abs, cos, id, num, sin, tan }` | Heredado de `FOLLOW(Stmt)` |
+| `Stmt` | `{ $, (, -, abs, cos, id, num, sin, sqrt, tan }` | Seguido por la siguiente sentencia o fin de cadena |
+| `StmtTail` | `{ $, (, -, abs, cos, id, num, sin, sqrt, tan }` | Heredado de `FOLLOW(Stmt)` |
 | `Expr` | `{ ), ; }` | Aparece antes de `;` o de cierre `)` |
 | `ExprPrime` | `{ ), ; }` | Cierre de expresión |
 | `Term` | `{ ), +, -, ; }` | `FIRST(Expr') \ { ε } ∪ FOLLOW(Expr)` |
@@ -155,31 +157,32 @@ $$\text{PRED}(A \to \alpha) = \begin{cases} \text{FIRST}(\alpha) & \text{si } \v
 
 | Regla ID | Regla de Producción | ¿Anulable? | Conjunto de Predicción PRED(A -> α) |
 |---|---|---|---|
-| **1** | `Program -> StmtList` | Sí | `{ $, (, -, abs, cos, id, num, sin, tan }` |
-| **2** | `StmtList -> Stmt StmtList` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
+| **1** | `Program -> StmtList` | Sí | `{ $, (, -, abs, cos, id, num, sin, sqrt, tan }` |
+| **2** | `StmtList -> Stmt StmtList` | No | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
 | **3** | `StmtList -> ε` | Sí | `{ $ }` |
 | **4** | `Stmt -> id StmtTail` | No | `{ id }` |
-| **5** | `Stmt -> NonIdFactor TermPrime ExprPrime ;` | No | `{ (, -, abs, cos, num, sin, tan }` |
+| **5** | `Stmt -> NonIdFactor TermPrime ExprPrime ;` | No | `{ (, -, abs, cos, num, sin, sqrt, tan }` |
 | **6** | `StmtTail -> = Expr ;` | No | `{ = }` |
 | **7** | `StmtTail -> TermPrime ExprPrime ;` | No | `{ %, *, +, -, /, ; }` |
-| **8** | `Expr -> Term ExprPrime` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
+| **8** | `Expr -> Term ExprPrime` | No | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
 | **9** | `ExprPrime -> + Term ExprPrime` | No | `{ + }` |
 | **10** | `ExprPrime -> - Term ExprPrime` | No | `{ - }` |
 | **11** | `ExprPrime -> ε` | Sí | `{ ), ; }` |
-| **12** | `Term -> Factor TermPrime` | No | `{ (, -, abs, cos, id, num, sin, tan }` |
+| **12** | `Term -> Factor TermPrime` | No | `{ (, -, abs, cos, id, num, sin, sqrt, tan }` |
 | **13** | `TermPrime -> * Factor TermPrime` | No | `{ * }` |
 | **14** | `TermPrime -> / Factor TermPrime` | No | `{ / }` |
 | **15** | `TermPrime -> % Factor TermPrime` | No | `{ % }` |
 | **16** | `TermPrime -> ε` | Sí | `{ ), +, -, ; }` |
 | **17** | `Factor -> id` | No | `{ id }` |
-| **18** | `Factor -> NonIdFactor` | No | `{ (, -, abs, cos, num, sin, tan }` |
+| **18** | `Factor -> NonIdFactor` | No | `{ (, -, abs, cos, num, sin, sqrt, tan }` |
 | **19** | `NonIdFactor -> num` | No | `{ num }` |
 | **20** | `NonIdFactor -> ( Expr )` | No | `{ ( }` |
 | **21** | `NonIdFactor -> abs ( Expr )` | No | `{ abs }` |
 | **22** | `NonIdFactor -> sin ( Expr )` | No | `{ sin }` |
 | **23** | `NonIdFactor -> cos ( Expr )` | No | `{ cos }` |
 | **24** | `NonIdFactor -> tan ( Expr )` | No | `{ tan }` |
-| **25** | `NonIdFactor -> - Factor` | No | `{ - }` |
+| **25** | `NonIdFactor -> sqrt ( Expr )` | No | `{ sqrt }` |
+| **26** | `NonIdFactor -> - Factor` | No | `{ - }` |
 
 ### Verificación Formal de la Condición LL(1)
 
@@ -189,10 +192,10 @@ $$\text{PRED}(A \to \alpha_i) \cap \text{PRED}(A \to \alpha_j) = \emptyset \quad
 Evaluando cada no terminal con alternativas:
 
 1. **`StmtList`**:
-   - `PRED(R2) ∩ PRED(R3) = { (, -, abs, cos, id, num, sin, tan } ∩ { $ } = ∅` (Disjuntos ✓)
+   - `PRED(R2) ∩ PRED(R3) = { (, -, abs, cos, id, num, sin, sqrt, tan } ∩ { $ } = ∅` (Disjuntos ✓)
 
 2. **`Stmt`**:
-   - `PRED(R4) ∩ PRED(R5) = { id } ∩ { (, -, abs, cos, num, sin, tan } = ∅` (Disjuntos ✓)
+   - `PRED(R4) ∩ PRED(R5) = { id } ∩ { (, -, abs, cos, num, sin, sqrt, tan } = ∅` (Disjuntos ✓)
 
 3. **`StmtTail`**:
    - `PRED(R6) ∩ PRED(R7) = { = } ∩ { %, *, +, -, /, ; } = ∅` (Disjuntos ✓)
@@ -211,10 +214,10 @@ Evaluando cada no terminal con alternativas:
    - `PRED(R15) ∩ PRED(R16) = { % } ∩ { ), +, -, ; } = ∅` (Disjuntos ✓)
 
 6. **`Factor`**:
-   - `PRED(R17) ∩ PRED(R18) = { id } ∩ { (, -, abs, cos, num, sin, tan } = ∅` (Disjuntos ✓)
+   - `PRED(R17) ∩ PRED(R18) = { id } ∩ { (, -, abs, cos, num, sin, sqrt, tan } = ∅` (Disjuntos ✓)
 
 7. **`NonIdFactor`**:
-   - Las reglas 19 a 25 tienen como conjuntos de predicción los conjuntos directores unitarios `{ num }`, `{ ( }`, `{ abs }`, `{ sin }`, `{ cos }`, `{ tan }` y `{ - }`. Todos son disjuntos dos a dos. (Disjuntos ✓)
+   - Las reglas 19 a 26 tienen como conjuntos de predicción los conjuntos directores unitarios `{ num }`, `{ ( }`, `{ abs }`, `{ sin }`, `{ cos }`, `{ tan }`, `{ sqrt }` y `{ - }`. Todos son disjuntos dos a dos. (Disjuntos ✓)
 
 **Conclusión:** La gramática es **ESTRICTAMENTE LL(1) Y NO PRESENTA NINGÚN CONFLICTO**.
 
@@ -222,20 +225,20 @@ Evaluando cada no terminal con alternativas:
 
 ## Tabla de Análisis Sintáctico Predictivo LL(1)
 
-La siguiente tabla resume las transiciones `M[A, a]` de la gramática. Cada celda indica la regla de producción que debe aplicarse cuando el no terminal $A$ se encuentra en el tope de la pila y el terminal $a$ es el símbolo de entrada:
+La siguiente tabla resume las transiciones `M[A, a]` de la gramática (82 celdas activas, 0 conflictos). Cada celda indica la regla de producción que debe aplicarse cuando el no terminal $A$ se encuentra en el tope de la pila y el terminal $a$ es el símbolo de entrada:
 
-| No Terminal | `id` | `num` | `=` | `+` | `-` | `*` | `/` | `%` | `(` | `)` | `abs` | `sin` | `cos` | `tan` | `;` | `$` |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **`Program`** | (1) | (1) | | | (1) | | | | (1) | | (1) | (1) | (1) | (1) | | (1) |
-| **`StmtList`** | (2) | (2) | | | (2) | | | | (2) | | (2) | (2) | (2) | (2) | | (3) |
-| **`Stmt`** | (4) | (5) | | | (5) | | | | (5) | | (5) | (5) | (5) | (5) | | |
-| **`StmtTail`** | | | (6) | (7) | (7) | (7) | (7) | (7) | | | | | | | (7) | |
-| **`Expr`** | (8) | (8) | | | (8) | | | | (8) | | (8) | (8) | (8) | (8) | | |
-| **`ExprPrime`** | | | | (9) | (10) | | | | | (11) | | | | | (11) | |
-| **`Term`** | (12) | (12) | | | (12) | | | | (12) | | (12) | (12) | (12) | (12) | | |
-| **`TermPrime`** | | | | (16) | (16) | (13) | (14) | (15) | | (16) | | | | | (16) | |
-| **`Factor`** | (17) | (18) | | | (18) | | | | (18) | | (18) | (18) | (18) | (18) | | |
-| **`NonIdFactor`**| | (19) | | | (25) | | | | (20) | | (21) | (22) | (23) | (24) | | |
+| No Terminal | `id` | `num` | `=` | `+` | `-` | `*` | `/` | `%` | `(` | `)` | `abs` | `sqrt` | `sin` | `cos` | `tan` | `;` | `$` |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **`Program`** | (1) | (1) | | | (1) | | | | (1) | | (1) | (1) | (1) | (1) | (1) | | (1) |
+| **`StmtList`** | (2) | (2) | | | (2) | | | | (2) | | (2) | (2) | (2) | (2) | (2) | | (3) |
+| **`Stmt`** | (4) | (5) | | | (5) | | | | (5) | | (5) | (5) | (5) | (5) | (5) | | |
+| **`StmtTail`** | | | (6) | (7) | (7) | (7) | (7) | (7) | | | | | | | | (7) | |
+| **`Expr`** | (8) | (8) | | | (8) | | | | (8) | | (8) | (8) | (8) | (8) | (8) | | |
+| **`ExprPrime`** | | | | (9) | (10) | | | | | (11) | | | | | | (11) | |
+| **`Term`** | (12) | (12) | | | (12) | | | | (12) | | (12) | (12) | (12) | (12) | (12) | | |
+| **`TermPrime`** | | | | (16) | (16) | (13) | (14) | (15) | | (16) | | | | | | (16) | |
+| **`Factor`** | (17) | (18) | | | (18) | | | | (18) | | (18) | (18) | (18) | (18) | (18) | | |
+| **`NonIdFactor`**| | (19) | | | (26) | | | | (20) | | (21) | (25) | (22) | (23) | (24) | | |
 
 *Nota: Todas las celdas en blanco representan errores sintácticos directos detectados en tiempo O(1). Ninguna celda contiene más de una regla.*
 
@@ -256,7 +259,7 @@ flowchart LR
 ### Fase Léxica (Lexer)
 Implementada en [`src/lexer.py`](file:///src/lexer.py):
 - Reconoce identificadores mediante la expresión regular `[a-zA-Z_][a-zA-Z0-9_]*`.
-- Discrimina palabras clave para funciones matemáticas (`abs`, `sin`, `cos`, `tan`), incluyendo soporte en español (`sen`).
+- Discrimina palabras clave para funciones matemáticas (`abs`, `sqrt`, `sin`, `cos`, `tan`), incluyendo soporte en español (`raiz`, `sen`).
 - Soporta números enteros y flotantes (incluyendo notación científica).
 - Descarta comentarios de línea (`//` y `#`) y espacios en blanco sin perturbar el rastreo posicional (línea y columna).
 - Genera excepciones descriptivas [`LexerError`](file:///src/lexer.py) ante caracteres ilegales.
@@ -276,6 +279,7 @@ Implementada en [`src/semantic.py`](file:///src/semantic.py) e [`src/interpreter
   - Lanza [`SemanticError`](file:///src/semantic.py) si una variable es leída sin haber sido inicializada previamente.
   - Detecta y aborta divisiones por cero (`a / 0`).
   - Detecta y aborta operaciones de módulo por cero (`a % 0`).
+  - Detecta y aborta raíces cuadradas de números negativos (`sqrt(x)` con $x < 0$ en el dominio real).
   - Detecta discontinuidades en la tangente (asíntotas en $(2k+1)\frac{\pi}{2}$).
 - **Evaluación Matemática:** Soporte para la biblioteca estándar `math`, calculando funciones en radianes con precisión numérica.
 
@@ -301,14 +305,14 @@ Tarea - Gramatica LL(1)/
 ├── ejemplos/
 │   ├── 01_aritmetica.txt           # Caso de prueba: Aritmética básica y precedencia
 │   ├── 02_trigonometria.txt        # Caso de prueba: Seno, Coseno, Tangente e identidades
-│   ├── 03_modulo_y_abs.txt         # Caso de prueba: Módulo y Valor Absoluto
+│   ├── 03_modulo_y_abs.txt         # Caso de prueba: Módulo, Valor Absoluto y Raíz Cuadrada
 │   ├── 04_variables.txt            # Caso de prueba: Fórmulas geométricas y reutilización de variables
 │   └── 05_programa_completo.txt    # Caso integrador completo
 └── tests/
     ├── __init__.py
     ├── test_lexer.py               # 7 Pruebas unitarias de la fase léxica
-    ├── test_parser_ll1.py          # 8 Pruebas unitarias de la gramática y análisis sintáctico
-    ├── test_semantic.py            # 9 Pruebas unitarias de la tabla de símbolos y evaluación
+    ├── test_parser_ll1.py          # 9 Pruebas unitarias de la gramática y análisis sintáctico
+    ├── test_semantic.py            # 11 Pruebas unitarias de la tabla de símbolos y evaluación
     └── test_integration.py         # 1 Prueba de integración de extremo a extremo
 ```
 
@@ -337,7 +341,7 @@ python3 main.py --gramatica
 ```
 
 ### 4. Visualizar la Tabla de Análisis Sintáctico LL(1) M[A, a]
-Muestra en formato de matriz tabular todas las 75 transiciones activas de la tabla predictiva:
+Muestra en formato de matriz tabular todas las 82 transiciones activas de la tabla predictiva:
 ```bash
 python3 main.py --tabla
 ```
@@ -356,7 +360,7 @@ python3 main.py --archivo ejemplos/04_variables.txt
 ```
 
 ### 6. Ejecutar Demostración Automática de Casos de Prueba
-Corre de forma secuencial 5 casos de prueba guiados (Aritmética, Valor Absoluto, Trigonometría, Variables y Manejo de Errores):
+Corre de forma secuencial 5 casos de prueba guiados (Aritmética, Valor Absoluto y Raíz Cuadrada, Trigonometría, Variables y Manejo de Errores):
 ```bash
 python3 main.py --demo
 ```
@@ -370,16 +374,16 @@ python3 main.py --repl
 ```text
 LL1> x = 20;
   [Asignación] x = 20
-LL1> y = abs(-15) + (x % 6);
-  [Asignación] y = 17
+LL1> y = sqrt(144) + abs(-15) + (x % 6);
+  [Asignación] y = 29
 LL1> z = sin(0) + cos(0);
   [Asignación] z = 1.0
 LL1> resultado = (y * 2) - z;
-  [Asignación] resultado = 33.0
+  [Asignación] resultado = 57.0
 LL1> resultado;
-  [Expresión] Resultado: 33.0
+  [Expresión] Resultado: 57.0
 LL1> tabla
-Variables actuales: {'x': 20, 'y': 17, 'z': 1.0, 'resultado': 33.0}
+Variables actuales: {'x': 20, 'y': 29, 'z': 1.0, 'resultado': 57.0}
 LL1> salir
 ```
 
@@ -387,7 +391,7 @@ LL1> salir
 
 ## Suite de Pruebas Automatizadas
 
-El proyecto cuenta con una batería de **25 pruebas unitarias e integrales** automatizadas bajo el framework `unittest`.
+El proyecto cuenta con una batería de **28 pruebas unitarias e integrales** automatizadas bajo el framework `unittest`.
 
 Para ejecutar toda la suite en Linux:
 ```bash
@@ -396,9 +400,9 @@ python3 -m unittest discover tests
 
 ### Salida esperada en terminal Linux:
 ```text
-.........................
+............................
 ----------------------------------------------------------------------
-Ran 25 tests in 0.010s
+Ran 28 tests in 0.009s
 
 OK
 ```
@@ -407,34 +411,37 @@ OK
 - **`test_lexer.py` (7 pruebas):**
   - Identificación de operadores binarios (`+`, `-`, `*`, `/`, `%`) y asignación (`=`).
   - Reconocimiento de números enteros y flotantes (incluyendo notación científica).
-  - Reconocimiento de palabras reservadas matemáticas (`sin`, `sen`, `cos`, `tan`, `abs`).
+  - Reconocimiento de palabras reservadas matemáticas (`abs`, `sqrt`, `raiz`, `sin`, `sen`, `cos`, `tan`).
   - Reconocimiento de identificadores válidos.
   - Omisión correcta de espacios y comentarios de una línea (`//`, `#`).
   - Detección y lanzamiento de excepción `LexerError` ante caracteres ilegales.
-- **`test_parser_ll1.py` (8 pruebas):**
+- **`test_parser_ll1.py` (9 pruebas):**
   - Verificación formal de que la gramática cumple la condición LL(1) sin intersecciones.
   - Validación de que la tabla `M[A, a]` no contiene entradas múltiples (0 conflictos).
   - Reconocimiento y aceptación por el autómata con pila para sentencias complejas.
   - Comprobación de asociatividad hacia la izquierda en resta y división (`10 - 4 - 2` $\to$ `(10 - 4) - 2`).
   - Comprobación de precedencia de operadores (`*` y `/` antes de `+` y `-`).
   - Reconocimiento de funciones trigonométricas y valor absoluto anidados.
+  - Construcción del AST y análisis sintáctico para raíz cuadrada (`sqrt` y `raiz`).
   - Detección precisa de errores sintácticos (omisión de punto y coma, paréntesis desbalanceados, operadores duplicados).
-- **`test_semantic.py` (9 pruebas):**
+- **`test_semantic.py` (11 pruebas):**
   - Evaluación exacta de operaciones aritméticas básicas (`+`, `-`, `*`, `/`, `%`).
   - Evaluación de valor absoluto (`abs`) para expresiones positivas, negativas y compuestas.
+  - Evaluación exacta de raíz cuadrada (`sqrt` y `raiz`) con enteros, flotantes y expresiones compuestas.
   - Evaluación de funciones trigonométricas en radianes (`sin`, `cos`, `tan`) e identidades notables.
   - Asignación y reutilización de variables en memoria.
   - Detección y lanzamiento de `SemanticError` para variables no definidas.
   - Detección y detención de divisiones por cero (`x / 0`).
   - Detección y detención de módulo por cero (`x % 0`).
+  - Detección y detención de raíz cuadrada de números negativos (`sqrt(-x)`).
   - Detección de discontinuidades / asíntotas verticales en tangente.
 - **`test_integration.py` (1 prueba de integración):**
-  - Pipeline continuo que procesa 15 sentencias consecutivas validando Léxico, Sintáctico (Pila y AST) y Semántico conjuntamente.
+  - Pipeline continuo que procesa 16 sentencias consecutivas validando Léxico, Sintáctico (Pila y AST) y Semántico conjuntamente.
 
 ---
 
 ## Conclusiones
 
-1. **Diseño LL(1) Riguroso:** Mediante la eliminación de la recursión por la izquierda y la factorización por la izquierda de las sentencias que inician con identificadores (`Stmt -> id StmtTail`), se logró una gramática con **25 reglas de producción** cuyos conjuntos de predicción son estrictamente disjuntos, garantizando cero conflictos en la tabla sintáctica.
+1. **Diseño LL(1) Riguroso:** Mediante la eliminación de la recursión por la izquierda y la factorización por la izquierda de las sentencias que inician con identificadores (`Stmt -> id StmtTail`), se logró una gramática con **26 reglas de producción** cuyos conjuntos de predicción son estrictamente disjuntos, garantizando cero conflictos y 82 celdas deterministas en la tabla sintáctica predictiva.
 2. **Modularidad y Separación de Fases:** El compilador respeta cabalmente las etapas clásicas de transducción: Análisis Léxico $\to$ Análisis Sintáctico $\to$ Análisis Semántico $\to$ Intérprete.
 3. **Robustez y Verificación:** Se garantizó la corrección del software mediante la demostración formal matemática y una cobertura de pruebas automatizadas del 100% de los requerimientos.

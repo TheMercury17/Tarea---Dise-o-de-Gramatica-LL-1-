@@ -251,7 +251,8 @@ def crear_gramatica_proyecto() -> Gramatica:
     """
     Crea y retorna la Gramática Formal LL(1) diseñada para el lenguaje
     con operaciones aritméticas (+, -, *, /, %), valor absoluto (abs),
-    funciones trigonométricas (sin, cos, tan) y asignación de variables.
+    raíz cuadrada (sqrt), funciones trigonométricas (sin, cos, tan)
+    y asignación de variables.
     """
     no_terminales = [
         "Program",
@@ -278,6 +279,7 @@ def crear_gramatica_proyecto() -> Gramatica:
         "(",
         ")",
         "abs",
+        "sqrt",
         "sin",
         "cos",
         "tan",
@@ -347,7 +349,9 @@ def crear_gramatica_proyecto() -> Gramatica:
     g.agregar_regla("NonIdFactor", ["cos", "(", "Expr", ")"])
     # (24) NonIdFactor -> tan ( Expr )
     g.agregar_regla("NonIdFactor", ["tan", "(", "Expr", ")"])
-    # (25) NonIdFactor -> - Factor
+    # (25) NonIdFactor -> sqrt ( Expr )
+    g.agregar_regla("NonIdFactor", ["sqrt", "(", "Expr", ")"])
+    # (26) NonIdFactor -> - Factor
     g.agregar_regla("NonIdFactor", ["-", "Factor"])
 
     return g

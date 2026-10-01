@@ -27,6 +27,7 @@ class TokenType(str, Enum):
 
     # Funciones matemáticas y trigonométricas
     ABS = "abs"
+    SQRT = "sqrt"
     SIN = "sin"
     COS = "cos"
     TAN = "tan"

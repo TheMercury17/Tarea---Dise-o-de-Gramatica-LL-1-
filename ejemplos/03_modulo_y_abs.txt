@@ -16,3 +16,10 @@ diferencia = 15 - 49;
 abs_diferencia = abs(diferencia);
 resultado_mod = abs_diferencia % 5;
 resultado_mod;
+
+// Raíz cuadrada (sqrt y notación en español raiz)
+raiz_cuadrada_exacta = sqrt(144);
+cateto_a = 3;
+cateto_b = 4;
+hipotenusa = sqrt(cateto_a * cateto_a + cateto_b * cateto_b);
+hipotenusa;

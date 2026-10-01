@@ -51,6 +51,22 @@ class TestSemantic(unittest.TestCase):
         self.assertEqual(vars["b"], 15)
         self.assertEqual(vars["c"], 15)
 
+    def test_raiz_cuadrada(self):
+        codigo = """
+        r1 = sqrt(144);
+        r2 = sqrt(0);
+        r3 = sqrt(2);
+        r4 = raiz(25);
+        r5 = sqrt(abs(-16));
+        """
+        interp = self.ejecutar(codigo)
+        vars = interp.symbol_table.get_all()
+        self.assertEqual(vars["r1"], 12)
+        self.assertEqual(vars["r2"], 0)
+        self.assertAlmostEqual(vars["r3"], math.sqrt(2), places=6)
+        self.assertEqual(vars["r4"], 5)
+        self.assertEqual(vars["r5"], 4)
+
     def test_funciones_trigonometricas(self):
         codigo = f"""
         pi = {math.pi};
@@ -117,6 +133,15 @@ class TestSemantic(unittest.TestCase):
         with self.assertRaises(SemanticError) as ctx:
             interp.evaluate(ast)
         self.assertIn("asíntota vertical", str(ctx.exception))
+
+    def test_error_semantico_raiz_cuadrada_negativa(self):
+        codigo = "x = sqrt(-9);"
+        tokens = Lexer(codigo).tokenize()
+        ast = ParserLL1(tokens).parse()
+        interp = Interpreter()
+        with self.assertRaises(SemanticError) as ctx:
+            interp.evaluate(ast)
+        self.assertIn("Raíz cuadrada de un número negativo", str(ctx.exception))
 
 
 if __name__ == "__main__":

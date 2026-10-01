@@ -88,6 +88,11 @@ class Interpreter:
 
         if func == "abs":
             return abs(val)
+        elif func == "sqrt":
+            if val < 0:
+                raise SemanticError(f"Raíz cuadrada de un número negativo ({val}) no está permitida en los números reales.")
+            res = math.sqrt(val)
+            return int(res) if isinstance(res, float) and res.is_integer() else res
         elif func == "sin":
             res = math.sin(val)
             # Redondeo para valores trigonométricos típicos (ej: sin(pi) ~ 0)

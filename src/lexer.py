@@ -29,6 +29,8 @@ class Lexer:
 
     RESERVADAS = {
         "abs": TokenType.ABS,
+        "sqrt": TokenType.SQRT,
+        "raiz": TokenType.SQRT,  # Soporte de notación en español
         "sin": TokenType.SIN,
         "sen": TokenType.SIN,  # Soporte de notación en español
         "cos": TokenType.COS,
@@ -79,8 +81,14 @@ class Lexer:
             elif tipo_coincidencia == "ID":
                 # Verificar si es función matemática reservada o identificador de variable
                 tipo_token = self.RESERVADAS.get(valor.lower(), TokenType.ID)
-                # Si es 'sen', normalizamos internamente a 'sin' para coincidir con la gramática
-                val_normalizado = "sin" if valor.lower() == "sen" else valor
+                # Si es 'sen' o 'raiz', normalizamos internamente para coincidir con los terminales de la gramática
+                val_lower = valor.lower()
+                if val_lower == "sen":
+                    val_normalizado = "sin"
+                elif val_lower == "raiz":
+                    val_normalizado = "sqrt"
+                else:
+                    val_normalizado = valor
                 tokens.append(Token(tipo_token, val_normalizado, linea, columna, pos))
             elif tipo_coincidencia == "ASSIGN":
                 tokens.append(Token(TokenType.ASSIGN, valor, linea, columna, pos))

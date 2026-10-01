@@ -38,11 +38,13 @@ class TestLexer(unittest.TestCase):
         self.assertEqual(valores, ["42", "3.14159", "0.001", "1e3"])
 
     def test_palabras_clave_matematicas(self):
-        codigo = "abs sin sen cos tan"
+        codigo = "abs sqrt raiz sin sen cos tan"
         tokens = Lexer(codigo).tokenize()
         tipos = [t.type for t in tokens if t.type != TokenType.EOF]
         esperados = [
             TokenType.ABS,
+            TokenType.SQRT,
+            TokenType.SQRT, # 'raiz' mapeado a SQRT
             TokenType.SIN,
             TokenType.SIN,  # 'sen' mapeado a SIN
             TokenType.COS,

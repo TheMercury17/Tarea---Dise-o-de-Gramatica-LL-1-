@@ -216,11 +216,13 @@ def ejecutar_demostracion():
         resultado = x - modulo + division;
         resultado;
         """),
-        ("Caso 2: Valor Absoluto (abs)", """
+        ("Caso 2: Valor Absoluto (abs) y Raíz Cuadrada (sqrt / raiz)", """
         negativo = -25.75;
         positivo = abs(negativo);
-        expresion_abs = abs(10 - 50) % 7;
-        expresion_abs;
+        raiz_exacta = sqrt(144);
+        raiz_formula = sqrt(3 * 3 + 4 * 4); // Hipotenusa triángulo 3-4-5
+        expresion_comb = sqrt(abs(10 - 50) + 9); // sqrt(40 + 9) = sqrt(49) = 7
+        expresion_comb;
         """),
         ("Caso 3: Funciones Trigonométricas (sin, cos, tan)", """
         angulo = 0;
@@ -240,6 +242,8 @@ def ejecutar_demostracion():
         ("Caso 5: Manejo Robusto de Errores Semánticos y Léxicos", """
         // Intento de división por cero
         error_div = 10 / 0;
+        // Intento de raíz cuadrada de número negativo
+        error_raiz = sqrt(-16);
         // Intento de usar variable no declarada
         error_var = variable_fantasma + 5;
         """)

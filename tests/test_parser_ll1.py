@@ -41,6 +41,7 @@ class TestParserLL1(unittest.TestCase):
             "y = x + 10 * 2;",
             "z = abs(-15) % 4;",
             "res = sin(0) + cos(0) + tan(0);",
+            "hipotenusa = sqrt(3 * 3 + 4 * 4);",
             "val = - (5 + 2) * 3;",
             "x = 1; y = 2; z = x + y; z;"
         ]
@@ -92,6 +93,16 @@ class TestParserLL1(unittest.TestCase):
         func_sin = func_abs.arg
         self.assertIsInstance(func_sin, FunctionCallNode)
         self.assertEqual(func_sin.func_name, "sin")
+
+    def test_parser_raiz_cuadrada(self):
+        """Verifica la construcción del AST para la función raíz cuadrada (sqrt)."""
+        codigo = "r = sqrt(x + 16);"
+        tokens = Lexer(codigo).tokenize()
+        ast = ParserLL1(tokens).parse()
+        self.assertIsInstance(ast.statements[0], AssignNode)
+        func_sqrt = ast.statements[0].expr
+        self.assertIsInstance(func_sqrt, FunctionCallNode)
+        self.assertEqual(func_sqrt.func_name, "sqrt")
 
     def test_error_sintactico_sin_punto_y_coma(self):
         codigo = "x = 10"
